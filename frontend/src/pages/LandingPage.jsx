@@ -21,7 +21,7 @@ const features = [
 
 const LandingPage = ({ onEnter }) => {
   return (
-    <div className="min-h-screen overflow-y-auto" style={{ background: 'var(--color-navy-950)' }}>
+    <div className="h-screen overflow-y-auto" style={{ background: 'var(--color-navy-950)' }}>
 
       {/* Background grid */}
       <div className="fixed inset-0 pointer-events-none" style={{
