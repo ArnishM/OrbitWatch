@@ -54,6 +54,14 @@ def predict_future(historical: List[Dict], predict_years: int = 5) -> Dict:
             current_val = float(values[-1])
             predicted_final = float(future_values[-1])
             change_pct = ((predicted_final - current_val) / max(current_val, 1)) * 100
+            
+            # Calculate R-squared as a pseudo "confidence score" (0 to 100%)
+            # If variance is 0 or too few points, R2 might be problematic, so we clamp it
+            try:
+                r2 = model.score(years, values)
+                confidence = max(10, min(99, int(r2 * 100))) if r2 > 0 else 40
+            except:
+                confidence = 50
 
             predictions["indicators"][key] = {
                 "label": label,
@@ -61,7 +69,8 @@ def predict_future(historical: List[Dict], predict_years: int = 5) -> Dict:
                 "values": [round(v, 1) for v in future_values],
                 "final_prediction": round(predicted_final, 1),
                 "change_pct": round(change_pct, 1),
-                "trend": "increasing" if change_pct > 0 else "decreasing"
+                "trend": "increasing" if change_pct > 0 else "decreasing",
+                "confidence_pct": confidence
             }
 
         return predictions

@@ -58,3 +58,30 @@ export const useProcess = () => {
 
   return { trigger, result, loading, error };
 };
+
+/**
+ * Hook to fetch real satellite-derived alerts for a district + year.
+ * Compares current vs previous year metrics against environmental thresholds.
+ */
+export const useAlerts = (district, year) => {
+  const [alerts, setAlerts] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!district || !year) return;
+    setLoading(true);
+
+    apiService.getAlerts(district, year)
+      .then(result => {
+        setAlerts(result.alerts || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Backend offline — leave alerts as null so Dashboard uses its fallback
+        setAlerts(null);
+        setLoading(false);
+      });
+  }, [district, year]);
+
+  return { alerts, loading };
+};

@@ -224,11 +224,20 @@ DISTRICTS = {
 
 
 def get_district(name: str):
-    """Get district info by name (case-insensitive)."""
+    """Get district info by name (case-insensitive). Auto-generates fallback for unknown districts."""
     for k, v in DISTRICTS.items():
         if k.lower() == name.lower():
             return k, v
-    return None, None
+    
+    # Auto-generate a fallback config so the UI doesn't crash to "Offline Mode"
+    # for districts that exist in the map GeoJSON but not in our explicit dictionary.
+    formatted_name = name.title()
+    fallback_info = {
+        "bbox": [78.0, 20.0, 79.0, 21.0], # Generic central India bbox
+        "center": [20.5, 78.5],
+        "state": "Unknown State"
+    }
+    return formatted_name, fallback_info
 
 
 def list_districts():

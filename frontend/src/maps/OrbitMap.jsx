@@ -150,8 +150,8 @@ const OrbitMap = ({ district, activeLayer, onDistrictClick }) => {
   }, [district]);
 
   return (
-    <div style={{ position: 'relative', flex: 1, minHeight: 380 }}>
-      <div ref={mapRef} style={{ width: '100%', height: '100%', minHeight: 380 }} />
+    <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 380 }}>
+      <div ref={mapRef} style={{ flex: 1, width: '100%', minHeight: 380 }} />
 
       {/* Loading overlay */}
       {loadingGeo && (
@@ -171,14 +171,14 @@ const OrbitMap = ({ district, activeLayer, onDistrictClick }) => {
       )}
 
       {/* Legend */}
-      <div style={{ position: 'absolute', bottom: 12, left: 12, zIndex: 1000, background: 'rgba(7,26,46,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 12px', fontSize: 11, color: '#94a3b8' }}>
+      <div style={{ position: 'absolute', bottom: 12, left: 12, zIndex: 1000, background: 'rgba(7,26,46,0.9)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '8px 12px', fontSize: 11, color: 'var(--text-secondary)' }}>
         <div style={{ fontWeight: 600, marginBottom: 4, color: 'white' }}>{LAYER_COLORS[activeLayer].label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span>Low</span>
           <div style={{ width: 60, height: 5, borderRadius: 3, background: `linear-gradient(to right, rgba(3,13,26,0.8), ${LAYER_COLORS[activeLayer].color})` }} />
           <span>High</span>
         </div>
-        <div style={{ marginTop: 4, color: '#475569' }}>Click district to explore · Hover for index value</div>
+        <div style={{ marginTop: 4, color: 'var(--text-muted)' }}>Click district to explore · Hover for index value</div>
       </div>
 
       {/* Selected district badge */}

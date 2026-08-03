@@ -32,6 +32,10 @@ export const apiService = {
 
   // Health check
   healthCheck: () => API.get('/health').then(r => r.data),
+
+  // Real threshold-based alerts from satellite data
+  getAlerts: (district, year) =>
+    API.get(`/alerts/${district}`, { params: { year } }).then(r => r.data),
 };
 
 export default apiService;
