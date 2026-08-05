@@ -49,7 +49,12 @@ function t(doc, str, x, y, { size = 10, color = WHITE, bold = false, align = 'le
   tcolor(doc, color);
   const opts = { align };
   if (maxW) opts.maxWidth = maxW;
-  doc.text(String(str ?? ''), x, y, opts);
+  
+  if (Array.isArray(str)) {
+    doc.text(str, x, y, opts);
+  } else {
+    doc.text(String(str ?? ''), x, y, opts);
+  }
 }
 
 function wrappedText(doc, str, x, y, maxW, { size = 9, color = WHITE, bold = false, lineH = 5 } = {}) {
@@ -218,7 +223,7 @@ export async function exportReport({
   t(doc, 'OVERALL SDG SCORE', 13, y + 6.5, { size: 8, color: MUTED, bold: true });
   t(doc, `${overall} / 100`, 13, y + 13, { size: 13, bold: true, color: overallColor });
   t(doc, overallLabel, W - 12, y + 10, { size: 9, color: overallColor, bold: true, align: 'right' });
-  progressBar(doc, 65, y + 8, W - 85, 4, overall, overallColor);
+  progressBar(doc, 65, y + 8, W - 120, 4, overall, overallColor);
   y += 22;
 
   const sdgRows = [
@@ -233,7 +238,7 @@ export async function exportReport({
     boxStroke(doc, 7, y, W - 14, 12, SURFACE, BORDER, 2, 0.2);
     colorDot(doc, 14, y + 6, 2.5, row.color);
     t(doc, row.label, 20, y + 7.5, { size: 8.5, color: WHITE });
-    t(doc, `${score} / 100`, W - 45, y + 7.5, { size: 8.5, color: row.color, bold: true });
+    t(doc, `${score} / 100`, W - 45, y + 7.5, { size: 8.5, color: row.color, bold: true, align: 'right' });
     progressBar(doc, W - 42, y + 4, 33, 4, score, row.color);
     y += 15;
   }
@@ -296,6 +301,7 @@ export async function exportReport({
       const sevTag   = a.severity === 'critical' ? 'CRITICAL' : a.severity === 'warning' ? 'WARNING' : 'OK';
       // Strip emoji/non-ASCII from alert text
       const safeText = (a.text ?? '').replace(/[^\x00-\x7F]/g, '').trim();
+      doc.setFontSize(8.5); // Ensure font size is set before splitting
       const lines = doc.splitTextToSize(safeText, W - 50);
       const cardH = Math.max(14, lines.length * 4.8 + 8);
 
@@ -388,6 +394,7 @@ export async function exportReport({
   ];
 
   for (const r of recs) {
+    doc.setFontSize(8); // Ensure font size is set before splitting
     const lines   = doc.splitTextToSize(r.desc, W - 42);
     const cardH   = lines.length * 4.8 + 16;
 
