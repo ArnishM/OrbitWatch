@@ -10,7 +10,9 @@ const DISTRICTS = [
   'Ahmedabad','Surat','Vadodara','Rajkot','Bengaluru','Mysuru','Hubli','Mangaluru','Chennai',
   'Coimbatore','Madurai','Salem','Hyderabad','Warangal','Nizamabad','Thiruvananthapuram','Kochi',
   'Kolkata','Bhubaneswar','Patna','Ranchi','Bhopal','Indore','Gwalior','Jabalpur','Raipur',
-  'Guwahati','Ludhiana','Amritsar','Gurugram','Faridabad','Dehradun','Shimla','Panaji','New Delhi'
+  'Guwahati','Ludhiana','Amritsar','Gurugram','Faridabad','Dehradun','Shimla','Panaji','New Delhi',
+  'Visakhapatnam','Vijayawada','Guntur','Tirupati','Kurnool','Chandigarh','Puducherry','Kozhikode',
+  'Jammu','Srinagar','Leh','Agartala','Shillong','Imphal','Kohima','Aizawl','Itanagar','Dhanbad'
 ];
 
 const YEARS = ['2021','2022','2023','2024','2025'];
@@ -40,6 +42,12 @@ const Topbar = ({ district, setDistrict, year, setYear }) => {
     setSuggestions(val.length > 0
       ? DISTRICTS.filter(d => d.toLowerCase().includes(val.toLowerCase())).slice(0, 6)
       : []);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && search.trim() !== '') {
+      selectDistrict(search.trim());
+    }
   };
 
   const selectDistrict = (d) => {
@@ -83,6 +91,7 @@ const Topbar = ({ district, setDistrict, year, setYear }) => {
           <input
             value={search}
             onChange={e => handleSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Search district…"
             style={{
               background: 'rgba(128,128,128,0.08)',
