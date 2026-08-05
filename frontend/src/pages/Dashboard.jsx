@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
-import { FiDroplet, FiTrendingDown, FiTrendingUp, FiRefreshCw, FiWifi, FiWifiOff } from 'react-icons/fi';
+import { FiDroplet, FiTrendingDown, FiTrendingUp, FiRefreshCw, FiWifi, FiWifiOff, FiDownload } from 'react-icons/fi';
 import { TbTree, TbBuildingSkyscraper } from 'react-icons/tb';
 import { MdOutlineThermostat } from 'react-icons/md';
 import OrbitMap from '../maps/OrbitMap';
 import { useTheme } from '../context/ThemeContext';
 import { useDashboard, useProcess, useAlerts } from '../hooks/useDashboard';
 import { AnimatedLineChart, AnimatedBarChart } from '../components/AnimatedCharts';
+import { exportReport } from '../components/ReportExporter';
 
 ChartJS.register(ArcElement, Tooltip);
 
@@ -51,6 +52,7 @@ const Dashboard = ({ district = 'Nagpur', year = '2024', onDistrictChange }) => 
   const chartOpts = getChartOpts(isDark);
   
   const [activeLayer, setActiveLayer] = useState('ndwi');
+  const [exporting, setExporting] = useState(false);
   const { data: apiData, loading, backendOnline } = useDashboard(district, parseInt(year));
   const { trigger: triggerProcess, loading: processing } = useProcess();
   const { alerts: liveAlerts } = useAlerts(district, parseInt(year));
@@ -75,6 +77,38 @@ const Dashboard = ({ district = 'Nagpur', year = '2024', onDistrictChange }) => 
   const aiInsights = apiData?.insights ?? DEMO_INSIGHTS;
 
   const riskColor = RISK_SCORE > 70 ? '#E53935' : RISK_SCORE > 40 ? '#FB8C00' : '#43A047';
+
+  // ── Export PDF handler ─────────────────────────────────────────────────
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const predList = apiData?.predictions?.indicators
+        ? Object.entries(apiData.predictions.indicators).map(([, v]) => ({
+            label: v.label,
+            val: `${v.final_prediction} km²`,
+            delta: `${v.change_pct > 0 ? '+' : ''}${v.change_pct}%`,
+            conf: v.confidence_pct || 85,
+          }))
+        : null;
+      await exportReport({
+        district,
+        year,
+        stats: {
+          water: stats[0].value, veg: stats[1].value,
+          urban: stats[2].value, temp: stats[3].value,
+          waterChange: stats[0].change, vegChange: stats[1].change,
+          urbanChange: stats[2].change, tempChange: stats[3].change,
+        },
+        sdgScores: SDG_SCORES,
+        insights: aiInsights,
+        alerts: liveAlerts,
+        predictions: predList,
+        backendOnline,
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // SDG Donut config
   const sdgDonutOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: isDark ? '#0A2540' : '#FFFFFF', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', borderWidth: 1 } }, cutout: '72%' };
@@ -114,6 +148,28 @@ const Dashboard = ({ district = 'Nagpur', year = '2024', onDistrictChange }) => 
             style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--blue)', background: 'rgba(33,150,243,0.08)', border: '1px solid rgba(33,150,243,0.2)', padding: '4px 12px', borderRadius: 20, cursor: 'pointer' }}>
             <FiRefreshCw size={11} />
             {processing ? 'Processing…' : 'Run Pipeline'}
+          </button>
+          <button
+            id="export-report-btn"
+            onClick={handleExport}
+            disabled={exporting}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 11, fontWeight: 600,
+              color: '#ffffff',
+              background: exporting
+                ? 'rgba(33,150,243,0.25)'
+                : 'linear-gradient(135deg, #2196F3, #1565C0)',
+              border: '1px solid rgba(33,150,243,0.4)',
+              padding: '5px 14px', borderRadius: 20,
+              cursor: exporting ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: exporting ? 'none' : '0 2px 12px rgba(33,150,243,0.25)',
+              opacity: exporting ? 0.7 : 1,
+            }}
+          >
+            <FiDownload size={12} />
+            {exporting ? 'Generating…' : 'Export PDF'}
           </button>
         </div>
       </div>
