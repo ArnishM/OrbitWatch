@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import Optional
 import logging
+import re
 
 from backend.database.connection import get_db
 from backend.utils.districts import DISTRICTS, get_district, list_districts
@@ -12,12 +13,44 @@ from backend.ml.prediction import predict_future
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# ── In-memory cache to avoid reprocessing same district+year ──────────────
+# ── In-memory cache — capped at 500 entries to prevent memory exhaustion ──────
 _cache: dict = {}
+_MAX_CACHE_SIZE = 500
+
+VALID_YEAR_MIN = 2019
+VALID_YEAR_MAX = 2026
+VALID_DISTRICT_RE = re.compile(r"^[A-Za-z\s\-\.&]{1,60}$")
+
+
+def _validate_district(district: str):
+    """Raise 400 if district name contains invalid characters or is too long."""
+    if not VALID_DISTRICT_RE.match(district):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid district name. Use letters, spaces, hyphens or dots only (max 60 chars)."
+        )
+
+
+def _validate_year(year: int):
+    """Raise 400 if year is outside the supported range."""
+    if year < VALID_YEAR_MIN or year > VALID_YEAR_MAX:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Year must be between {VALID_YEAR_MIN} and {VALID_YEAR_MAX}."
+        )
 
 
 def _cache_key(district: str, year: int) -> str:
     return f"{district.lower()}_{year}"
+
+
+def _cache_set(key: str, value: dict):
+    """Set a cache entry, evicting the oldest entry if the cache is full."""
+    if len(_cache) >= _MAX_CACHE_SIZE:
+        oldest_key = next(iter(_cache))
+        del _cache[oldest_key]
+        logger.warning(f"Cache full — evicted oldest entry: {oldest_key}")
+    _cache[key] = value
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -44,21 +77,20 @@ def process_district(district: str, year: int):
     Returns computed NDWI, NDVI, NDBI, area stats, and SDG scores.
     Results are cached in memory per district+year.
     """
+    _validate_district(district)
+    _validate_year(year)
+
     cache_key = _cache_key(district, year)
     if cache_key in _cache:
         logger.info(f"Cache hit for {district} {year}")
         return _cache[cache_key]
 
     dist_name, dist_info = get_district(district)
-    if not dist_info:
-        raise HTTPException(status_code=404, detail=f"District '{district}' not supported. Use /api/districts.")
-
-    if year < 2019 or year > 2025:
-        raise HTTPException(status_code=400, detail="Year must be between 2019 and 2025.")
 
     result = run_pipeline(dist_name, dist_info, year)
-    _cache[cache_key] = result
+    _cache_set(cache_key, result)
     return result
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -70,15 +102,15 @@ def get_dashboard(district: str, year: int = 2024):
     """
     Get full dashboard data for a district: current metrics + historical trend + SDG scores.
     """
+    _validate_district(district)
+    _validate_year(year)
     dist_name, dist_info = get_district(district)
-    if not dist_info:
-        raise HTTPException(status_code=404, detail=f"District '{district}' not found.")
 
     # Get current year data
     cache_key = _cache_key(dist_name, year)
     if cache_key not in _cache:
         current = run_pipeline(dist_name, dist_info, year)
-        _cache[cache_key] = current
+        _cache_set(cache_key, current)
     else:
         current = _cache[cache_key]
 
@@ -87,7 +119,7 @@ def get_dashboard(district: str, year: int = 2024):
     for y in range(2021, year):
         k = _cache_key(dist_name, y)
         if k not in _cache:
-            _cache[k] = _generate_simulated_data(dist_name, y)
+            _cache_set(k, _generate_simulated_data(dist_name, y))
         historical.append(_cache[k])
 
     all_years = historical + [current]
@@ -103,7 +135,7 @@ def get_dashboard(district: str, year: int = 2024):
     for y in range(2021, 2026):
         k = _cache_key(dist_name, y)
         if k not in _cache:
-            _cache[k] = _generate_simulated_data(dist_name, y)
+            _cache_set(k, _generate_simulated_data(dist_name, y))
         timeline.append(_cache[k])
 
     return {
@@ -125,15 +157,15 @@ def get_dashboard(district: str, year: int = 2024):
 @router.get("/water/{district}")
 def get_water(district: str, year: int = 2024):
     """Water body metrics for a district."""
+    _validate_district(district)
+    _validate_year(year)
     dist_name, dist_info = get_district(district)
-    if not dist_info:
-        raise HTTPException(status_code=404, detail="District not found.")
 
     data = []
     for y in range(2020, year + 1):
         k = _cache_key(dist_name, y)
         if k not in _cache:
-            _cache[k] = _generate_simulated_data(dist_name, y)
+            _cache_set(k, _generate_simulated_data(dist_name, y))
         d = _cache[k]
         data.append({
             "year": y,
@@ -148,15 +180,15 @@ def get_water(district: str, year: int = 2024):
 @router.get("/vegetation/{district}")
 def get_vegetation(district: str, year: int = 2024):
     """Vegetation metrics for a district."""
+    _validate_district(district)
+    _validate_year(year)
     dist_name, dist_info = get_district(district)
-    if not dist_info:
-        raise HTTPException(status_code=404, detail="District not found.")
 
     data = []
     for y in range(2020, year + 1):
         k = _cache_key(dist_name, y)
         if k not in _cache:
-            _cache[k] = _generate_simulated_data(dist_name, y)
+            _cache_set(k, _generate_simulated_data(dist_name, y))
         d = _cache[k]
         data.append({
             "year": y,
@@ -171,15 +203,15 @@ def get_vegetation(district: str, year: int = 2024):
 @router.get("/urban/{district}")
 def get_urban(district: str, year: int = 2024):
     """Urban growth metrics for a district."""
+    _validate_district(district)
+    _validate_year(year)
     dist_name, dist_info = get_district(district)
-    if not dist_info:
-        raise HTTPException(status_code=404, detail="District not found.")
 
     data = []
     for y in range(2020, year + 1):
         k = _cache_key(dist_name, y)
         if k not in _cache:
-            _cache[k] = _generate_simulated_data(dist_name, y)
+            _cache_set(k, _generate_simulated_data(dist_name, y))
         d = _cache[k]
         data.append({
             "year": y,
@@ -194,15 +226,15 @@ def get_urban(district: str, year: int = 2024):
 @router.get("/climate/{district}")
 def get_climate(district: str, year: int = 2024):
     """Climate/temperature metrics for a district."""
+    _validate_district(district)
+    _validate_year(year)
     dist_name, dist_info = get_district(district)
-    if not dist_info:
-        raise HTTPException(status_code=404, detail="District not found.")
 
     data = []
     for y in range(2020, year + 1):
         k = _cache_key(dist_name, y)
         if k not in _cache:
-            _cache[k] = _generate_simulated_data(dist_name, y)
+            _cache_set(k, _generate_simulated_data(dist_name, y))
         d = _cache[k]
         data.append({
             "year": y,
@@ -224,19 +256,20 @@ def get_alerts(district: str, year: int = 2024):
     year satellite metrics against previous year and absolute thresholds.
     Alerts are driven by actual NDWI, NDVI, NDBI, and temperature values.
     """
+    _validate_district(district)
+    _validate_year(year)
     dist_name, dist_info = get_district(district)
-    if not dist_info:
-        raise HTTPException(status_code=404, detail="District not found.")
 
     # Ensure current and previous year data is computed / cached
     cur_key = _cache_key(dist_name, year)
     if cur_key not in _cache:
-        _cache[cur_key] = _generate_simulated_data(dist_name, year)
+        _cache_set(cur_key, _generate_simulated_data(dist_name, year))
     cur = _cache[cur_key]
 
-    prev_key = _cache_key(dist_name, year - 1)
+    prev_year = max(year - 1, VALID_YEAR_MIN)
+    prev_key = _cache_key(dist_name, prev_year)
     if prev_key not in _cache:
-        _cache[prev_key] = _generate_simulated_data(dist_name, year - 1)
+        _cache_set(prev_key, _generate_simulated_data(dist_name, prev_year))
     prev = _cache[prev_key]
 
     alerts = []

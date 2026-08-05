@@ -57,7 +57,7 @@ const Topbar = ({ district, setDistrict, year, setYear }) => {
       ];
 
   return (
-    <header style={{
+    <header className="app-topbar" style={{
       height: 60,
       background: 'var(--topbar-bg)',
       backdropFilter: 'blur(20px)',
@@ -75,7 +75,7 @@ const Topbar = ({ district, setDistrict, year, setYear }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
 
         {/* Search */}
-        <div style={{ position: 'relative' }}>
+        <div className="app-topbar-search" style={{ position: 'relative' }}>
           <FiSearch
             style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}
             size={14}
@@ -122,7 +122,7 @@ const Topbar = ({ district, setDistrict, year, setYear }) => {
         </div>
 
         {/* Year tabs */}
-        <div style={{ display: 'flex', gap: 3, background: 'rgba(128,128,128,0.08)', border: '1px solid var(--border)', borderRadius: 8, padding: 3 }}>
+        <div className="app-topbar-years" style={{ display: 'flex', gap: 3, background: 'rgba(128,128,128,0.08)', border: '1px solid var(--border)', borderRadius: 8, padding: 3 }}>
           {YEARS.map(y => (
             <button key={y} onClick={() => setYear && setYear(y)}
               style={{
@@ -142,7 +142,7 @@ const Topbar = ({ district, setDistrict, year, setYear }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
 
         {/* Live indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#43A047' }}>
+        <div className="app-topbar-live" style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#43A047' }}>
           <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#43A047', display: 'inline-block' }} />
           Live · Sentinel-2
         </div>

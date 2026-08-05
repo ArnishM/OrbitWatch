@@ -19,6 +19,7 @@ const Sidebar = () => {
 
   return (
     <motion.div
+      className="app-sidebar"
       animate={{ width: collapsed ? 64 : 230 }}
       transition={{ duration: 0.28, ease: 'easeInOut' }}
       style={{
@@ -32,10 +33,10 @@ const Sidebar = () => {
       }}
     >
       {/* Inner clip container so content doesn't overflow but button can */}
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', borderRight: 'none' }}>
+      <div className="app-sidebar-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', borderRight: 'none' }}>
 
         {/* Logo */}
-        <div style={{ padding: collapsed ? '18px 14px' : '18px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden', minHeight: 64 }}>
+        <div className="app-sidebar-logo" style={{ padding: collapsed ? '18px 14px' : '18px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden', minHeight: 64 }}>
           <div style={{ width: 34, height: 34, borderRadius: 9, background: 'linear-gradient(135deg, #2196F3, #43A047)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <MdOutlineSatelliteAlt size={19} color="white" />
           </div>
@@ -50,11 +51,12 @@ const Sidebar = () => {
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: collapsed ? '12px 10px' : '12px', display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto', overflowX: 'hidden' }}>
+        <nav className="app-sidebar-nav" style={{ flex: 1, padding: collapsed ? '12px 10px' : '12px', display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto', overflowX: 'hidden' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink key={item.name} to={item.path} title={collapsed ? item.name : ''}
+                className="app-sidebar-item"
                 style={({ isActive }) => ({
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: collapsed ? '10px' : '9px 12px',
@@ -84,7 +86,7 @@ const Sidebar = () => {
         {/* Data source badge */}
         <AnimatePresence>
           {!collapsed && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            <motion.div className="app-sidebar-badge" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
               <div style={{ background: 'rgba(33,150,243,0.07)', border: '1px solid rgba(33,150,243,0.15)', borderRadius: 8, padding: '7px 10px', fontSize: 10.5, color: 'var(--text-muted)', lineHeight: 1.6 }}>
                 <div style={{ color: '#2196F3', fontWeight: 600, marginBottom: 1 }}>🛰 Data Sources</div>
@@ -97,6 +99,7 @@ const Sidebar = () => {
 
       {/* Collapse toggle — sits outside inner container so overflow:visible shows it */}
       <motion.button
+        className="app-sidebar-toggle"
         onClick={() => setCollapsed(!collapsed)}
         whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.9 }}

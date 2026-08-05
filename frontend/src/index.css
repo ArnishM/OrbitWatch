@@ -116,7 +116,6 @@ h1, h2, h3, .font-display {
   letter-spacing: -0.02em;
 }
 
-/* ── Layout ────────────────────────────────────────────────── */
 .app-layout {
   display: flex;
   height: 100vh;
@@ -137,6 +136,70 @@ h1, h2, h3, .font-display {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 20px;
+}
+
+/* ── Mobile Responsiveness ────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column-reverse;
+  }
+  
+  .app-sidebar {
+    height: 60px !important;
+    width: 100vw !important;
+    flex-direction: row !important;
+    border-right: none !important;
+    border-top: 1px solid var(--border) !important;
+  }
+
+  .app-sidebar-inner {
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+
+  .app-sidebar-logo {
+    display: none !important;
+  }
+
+  .app-sidebar-nav {
+    flex-direction: row !important;
+    gap: 15px !important;
+    padding: 10px !important;
+    justify-content: space-around !important;
+  }
+  
+  .app-sidebar-item span {
+    display: none !important;
+  }
+
+  .app-sidebar-badge {
+    display: none !important;
+  }
+
+  .app-sidebar-toggle {
+    display: none !important;
+  }
+
+  .app-topbar {
+    padding: 0 10px !important;
+  }
+  
+  .app-topbar-search {
+    width: 140px !important;
+  }
+  
+  .app-topbar-years button {
+    padding: 4px 8px !important;
+  }
+
+  .app-topbar-live {
+    display: none !important;
+  }
+
+  .app-content {
+    padding: 10px;
+  }
 }
 
 /* ── Gradient border ───────────────────────────────────────── */
