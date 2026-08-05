@@ -58,7 +58,15 @@ const OrbitMap = ({ district, activeLayer, onDistrictClick }) => {
     }).addTo(leafletMap.current);
 
     // Force correct size after render
-    setTimeout(() => leafletMap.current?.invalidateSize(), 100);
+    setTimeout(() => leafletMap.current?.invalidateSize(), 150);
+
+    // Watch for container resize (important for mobile layout shifts)
+    if (mapRef.current) {
+      const observer = new ResizeObserver(() => {
+        leafletMap.current?.invalidateSize();
+      });
+      observer.observe(mapRef.current);
+    }
 
     // Load India district GeoJSON
     fetch('https://raw.githubusercontent.com/geohacker/india/master/district/india_district.geojson')
@@ -68,9 +76,6 @@ const OrbitMap = ({ district, activeLayer, onDistrictClick }) => {
         setLoadingGeo(false);
       })
       .catch(() => {
-        // Fallback: try alternate source
-        fetch('https://raw.githubusercontent.com/Subhash9325/GeoJson-Data-of-Indian-States/master/Indian_States')
-          .catch(() => setLoadingGeo(false));
         setLoadingGeo(false);
       });
   }, []);
@@ -150,8 +155,8 @@ const OrbitMap = ({ district, activeLayer, onDistrictClick }) => {
   }, [district]);
 
   return (
-    <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 380 }}>
-      <div ref={mapRef} style={{ flex: 1, width: '100%', minHeight: 380 }} />
+    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: 'inherit', display: 'flex', flexDirection: 'column' }}>
+      <div ref={mapRef} style={{ flex: 1, width: '100%', height: '100%' }} />
 
       {/* Loading overlay */}
       {loadingGeo && (

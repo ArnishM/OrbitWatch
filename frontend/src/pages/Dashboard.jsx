@@ -82,16 +82,30 @@ const Dashboard = ({ district = 'Nagpur', year = '2024', onDistrictChange }) => 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0, minHeight: '100%' }}>
-
+      <style>{`
+        .dash-stats   { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 10px; }
+        .dash-row2    { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px; }
+        .dash-row3    { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .dash-header  { flex-direction: column; gap: 8px; align-items: flex-start; }
+        .dash-header-right { flex-wrap: wrap; gap: 6px; }
+        .dash-map-height { min-height: 260px; }
+        @media (min-width: 640px) {
+          .dash-stats  { grid-template-columns: repeat(4,1fr); }
+          .dash-row2   { grid-template-columns: 1fr 340px; }
+          .dash-row3   { grid-template-columns: 1fr 1fr 1fr; }
+          .dash-header { flex-direction: row; align-items: flex-start; }
+          .dash-map-height { min-height: 340px; }
+        }
+      `}</style>
       {/* ── Header ── */}
-      <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="dash-header" style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontFamily: 'IBM Plex Serif, serif', fontSize: 22, fontWeight: 700, marginBottom: 2, color: 'var(--text-primary)' }}>
             {district} District <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 16 }}>· {year}</span>
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 12.5 }}>Environmental SDG indicators from Sentinel-2 satellite imagery</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="dash-header-right" style={{ display: 'flex', alignItems: 'center' }}>
           {backendOnline
             ? <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#43A047', background: 'rgba(67,160,71,0.1)', border: '1px solid rgba(67,160,71,0.2)', padding: '4px 10px', borderRadius: 20 }}><FiWifi size={11} /> API Online</span>
             : <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#FB8C00', background: 'rgba(251,140,0,0.1)', border: '1px solid rgba(251,140,0,0.2)', padding: '4px 10px', borderRadius: 20 }}><FiWifiOff size={11} /> Demo Mode</span>
@@ -105,7 +119,7 @@ const Dashboard = ({ district = 'Nagpur', year = '2024', onDistrictChange }) => 
       </div>
 
       {/* ── Row 1: Stat Cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
+      <div className="dash-stats">
         {stats.map((s, i) => {
           const Icon = s.icon;
           return (
@@ -128,11 +142,11 @@ const Dashboard = ({ district = 'Nagpur', year = '2024', onDistrictChange }) => 
       </div>
 
       {/* ── Row 2: Map LEFT + Charts+SDG RIGHT ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 10, marginBottom: 10 }}>
+      <div className="dash-row2">
 
         {/* MAP */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="glass-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 340 }}>
-          <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="glass-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
             <div style={{ fontWeight: 600, fontSize: 12, color: 'var(--text-primary)' }}>🗺 Change Hotspot Map — click any district</div>
             <div style={{ display: 'flex', gap: 5 }}>
               {[['ndwi', 'Water', '#00BCD4'], ['ndvi', 'Vegetation', '#43A047'], ['ndbi', 'Urban', '#FB8C00']].map(([key, label, color]) => (
@@ -143,7 +157,9 @@ const Dashboard = ({ district = 'Nagpur', year = '2024', onDistrictChange }) => 
               ))}
             </div>
           </div>
-          <OrbitMap district={district} activeLayer={activeLayer} onDistrictClick={onDistrictChange} />
+          <div className="dash-map-height" style={{ flex: 1 }}>
+            <OrbitMap district={district} activeLayer={activeLayer} onDistrictClick={onDistrictChange} />
+          </div>
         </motion.div>
 
         {/* RIGHT COLUMN: 3 charts + SDG ring */}
@@ -192,7 +208,7 @@ const Dashboard = ({ district = 'Nagpur', year = '2024', onDistrictChange }) => 
       </div>
 
       {/* ── Row 3: AI Insights + Predictions + Alerts ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+      <div className="dash-row3">
 
         {/* AI Insights */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="glass-card" style={{ padding: '12px 14px' }}>
