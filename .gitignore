@@ -16,3 +16,10 @@ dbpwd.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Personal docs (not for repo)
+HACKATHON_DOCS.md
+Data_Flow.md
+Projectinfo_doc.md
+Tech_Stack.md
+start_servers.bat

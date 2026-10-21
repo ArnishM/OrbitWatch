@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
+from backend.api import routes
+
 app = FastAPI(title="OrbitWatch API", description="Turning Satellite Data into SDG Action")
 
 # CORS config — restrict to known frontend origins only
@@ -23,7 +25,6 @@ app.add_middleware(
     allow_methods=["GET"],   # This API is read-only
     allow_headers=["*"],
 )
-
 
 app.include_router(routes.router, prefix="/api")
 
