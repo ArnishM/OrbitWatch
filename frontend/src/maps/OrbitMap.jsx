@@ -50,11 +50,17 @@ const OrbitMap = ({ district, activeLayer, onDistrictClick }) => {
       attributionControl: true,
     });
 
-    // Dark basemap (Stadia Dark — free, no API key needed)
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://stadiamaps.com/">Stadia</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
-      maxZoom: 20,
+    // Dark basemap — standard OSM tiles with CSS dark filter (free forever, no API key)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      maxZoom: 19,
     }).addTo(leafletMap.current);
+
+    // Apply dark filter to map tile pane so it looks like a dark theme
+    const tilePane = leafletMap.current.getPane('tilePane');
+    if (tilePane) {
+      tilePane.style.filter = 'invert(1) hue-rotate(180deg) brightness(0.7) contrast(1.3)';
+    }
 
     // Force correct size after render
     setTimeout(() => leafletMap.current?.invalidateSize(), 150);
