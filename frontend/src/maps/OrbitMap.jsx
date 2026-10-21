@@ -50,17 +50,16 @@ const OrbitMap = ({ district, activeLayer, onDistrictClick }) => {
       attributionControl: true,
     });
 
-    // Dark basemap — standard OSM tiles with CSS dark filter (free forever, no API key)
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-      maxZoom: 19,
+    // Esri Dark Gray basemap — free, no API key, English labels
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri &copy; OpenStreetMap contributors',
+      maxZoom: 16,
     }).addTo(leafletMap.current);
 
-    // Apply dark filter to map tile pane so it looks like a dark theme
-    const tilePane = leafletMap.current.getPane('tilePane');
-    if (tilePane) {
-      tilePane.style.filter = 'invert(1) hue-rotate(180deg) brightness(0.7) contrast(1.3)';
-    }
+    // Esri Dark Gray reference labels layer (city names, borders, etc.)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 16,
+    }).addTo(leafletMap.current);
 
     // Force correct size after render
     setTimeout(() => leafletMap.current?.invalidateSize(), 150);
