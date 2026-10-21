@@ -144,4 +144,3 @@ npm run dev
 
 ---
 
-**Built for Hackathon 2026** · MIT License
